@@ -1,0 +1,15 @@
+schema: 1
+id: noto-cjk
+version: "backup-20260829"
+description: "Noto Sans CJK regular font used by the CPUSTC desktop"
+target:
+  architecture: loongarch32r
+  abi: ilp32s
+commands: []
+required_paths:
+  - path: /usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc
+    type: file
+licenses:
+  - id: OFL-1.1
+    files:
+      - licenses/OFL.txt

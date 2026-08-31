@@ -1,0 +1,23 @@
+schema: 1
+id: cpython
+version: "3.11.2"
+description: "CPUSTC LA32R CPython runtime with pip and bundled libraries"
+target:
+  architecture: loongarch32r
+  abi: ilp32s
+commands:
+  - python
+  - python3
+  - pip
+  - pip3
+  - cpython-selftest
+required_paths:
+  - path: /opt/cpython-3.11/bin/python3.11
+    type: executable
+licenses:
+  - id: Python-2.0
+    files:
+      - licenses/PYTHON-LICENSE.txt
+  - id: NOASSERTION
+    files:
+      - licenses/NOTICE

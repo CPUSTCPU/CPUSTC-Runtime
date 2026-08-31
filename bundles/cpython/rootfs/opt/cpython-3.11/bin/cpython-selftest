@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+runtime_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+exec "$runtime_root/bin/python3" -c '
+import bz2
+import ctypes
+import curses
+import decimal
+import hashlib
+import lzma
+import sqlite3
+import ssl
+import struct
+import sys
+import threading
+import xml.parsers.expat
+import zlib
+
+assert struct.calcsize("P") == 4
+assert sys.byteorder == "little"
+assert decimal.Decimal("1.25") * 4 == decimal.Decimal("5.00")
+print(sys.version)
+print("platform=", sys.platform, "pointer_bits=", struct.calcsize("P") * 8)
+print("openssl=", ssl.OPENSSL_VERSION)
+print("sqlite=", sqlite3.sqlite_version)
+print("threads=", threading.active_count())
+print("CPython LA32R self-test: PASS")
+'

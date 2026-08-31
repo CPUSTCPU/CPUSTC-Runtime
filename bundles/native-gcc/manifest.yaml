@@ -1,0 +1,20 @@
+schema: 1
+id: native-gcc
+version: "8.3.0"
+description: "CPUSTC LA32R target-native GCC 8.3.0 with /opt paths and matching sysroot"
+target:
+  architecture: loongarch32r
+  abi: ilp32s
+commands:
+  - gcc
+required_paths:
+  - path: /opt/native-toolchain/bin/gcc
+    type: executable
+  - path: /opt/native-toolchain/bin/gcc.real
+    type: executable
+  - path: /opt/native-sysroot/usr/include
+    type: directory
+licenses:
+  - id: NOASSERTION
+    files:
+      - licenses/NOTICE

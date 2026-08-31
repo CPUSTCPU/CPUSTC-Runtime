@@ -1,0 +1,5 @@
+This prebuilt runtime also contains third-party libraries copied from its legacy
+ext4 image. The Python license is archived separately, but the legacy image did
+not contain a complete license inventory for all bundled libraries.
+Redistribution is not authorized by this bundle metadata; complete the legal
+audit before release.

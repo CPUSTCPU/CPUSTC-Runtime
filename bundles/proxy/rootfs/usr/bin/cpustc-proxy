@@ -1,0 +1,131 @@
+#!/bin/sh
+# Configure a development board to use the phone's USB-tethered Clash HTTP proxy.
+# Execute it to configure NetSurf persistently. Source it to also update the
+# current shell's proxy environment.
+
+show_help() {
+    cat <<'EOF'
+Usage:
+  ./usb-proxy-config.sh
+  . ./usb-proxy-config.sh
+
+The default gateway from `ip route` is used automatically.
+Environment overrides: USB_PROXY_GATEWAY, USB_PROXY_PORT, USB_PROXY_IFACE,
+NETSURF_CHOICES_PATH.
+Example:
+  USB_PROXY_GATEWAY=192.168.42.129 USB_PROXY_PORT=7890 . ./usb-proxy-config.sh
+EOF
+}
+
+case "${1:-}" in
+    -h|--help)
+        show_help
+        return 0 2>/dev/null || exit 0
+        ;;
+esac
+
+if ! command -v ip >/dev/null 2>&1; then
+    echo "usb-proxy: ip command is required" >&2
+    return 1 2>/dev/null || exit 1
+fi
+
+route_line=$(ip route 2>/dev/null | awk '$1 == "default" { print; exit }')
+route_gateway=$(printf '%s\n' "$route_line" | awk '{ for (i = 1; i <= NF; i++) if ($i == "via") { print $(i + 1); exit } }')
+route_iface=$(printf '%s\n' "$route_line" | awk '{ for (i = 1; i <= NF; i++) if ($i == "dev") { print $(i + 1); exit } }')
+
+proxy_gateway=${USB_PROXY_GATEWAY:-$route_gateway}
+proxy_port=${USB_PROXY_PORT:-7890}
+proxy_iface=${USB_PROXY_IFACE:-$route_iface}
+
+if [ -z "$proxy_gateway" ]; then
+    echo "usb-proxy: no default gateway found; pass the phone address explicitly" >&2
+    echo "  USB_PROXY_GATEWAY=192.168.42.129 . $0" >&2
+    return 1 2>/dev/null || exit 1
+fi
+
+case "$proxy_port" in
+    *[!0-9]*|'')
+        echo "usb-proxy: invalid proxy port: $proxy_port" >&2
+        return 1 2>/dev/null || exit 1
+        ;;
+esac
+
+old_no_proxy=${no_proxy:-${NO_PROXY:-}}
+local_no_proxy="127.0.0.1,localhost,$proxy_gateway"
+[ -n "$old_no_proxy" ] && local_no_proxy="$local_no_proxy,$old_no_proxy"
+
+export http_proxy="http://$proxy_gateway:$proxy_port"
+export https_proxy="http://$proxy_gateway:$proxy_port"
+export HTTP_PROXY="$http_proxy"
+export HTTPS_PROXY="$https_proxy"
+export no_proxy="$local_no_proxy"
+export NO_PROXY="$local_no_proxy"
+
+netsurf_choices=${NETSURF_CHOICES_PATH:-/root/.netsurf/Choices}
+netsurf_dir=${netsurf_choices%/*}
+[ "$netsurf_dir" != "$netsurf_choices" ] || netsurf_dir=.
+netsurf_tmp="$netsurf_choices.tmp.$$"
+
+if ! mkdir -p "$netsurf_dir"; then
+    echo "usb-proxy: cannot create NetSurf configuration directory: $netsurf_dir" >&2
+    return 1 2>/dev/null || exit 1
+fi
+
+if [ -f "$netsurf_choices" ]; then
+    if ! awk '
+        {
+            key = $0
+            sub(/:.*/, "", key)
+            if (key == "http_proxy" ||
+                key == "http_proxy_host" ||
+                key == "http_proxy_port" ||
+                key == "http_proxy_noproxy")
+                next
+            print
+        }
+    ' "$netsurf_choices" >"$netsurf_tmp"; then
+        rm -f "$netsurf_tmp"
+        echo "usb-proxy: cannot read existing NetSurf Choices" >&2
+        return 1 2>/dev/null || exit 1
+    fi
+else
+    if ! : >"$netsurf_tmp"; then
+        echo "usb-proxy: cannot create NetSurf Choices" >&2
+        return 1 2>/dev/null || exit 1
+    fi
+fi
+
+if ! {
+    printf 'http_proxy:1\n'
+    printf 'http_proxy_host:%s\n' "$proxy_gateway"
+    printf 'http_proxy_port:%s\n' "$proxy_port"
+    printf 'http_proxy_noproxy:%s\n' "$local_no_proxy"
+} >>"$netsurf_tmp" ||
+   ! chmod 600 "$netsurf_tmp" ||
+   ! mv -f "$netsurf_tmp" "$netsurf_choices"; then
+    rm -f "$netsurf_tmp"
+    echo "usb-proxy: cannot update NetSurf Choices: $netsurf_choices" >&2
+    return 1 2>/dev/null || exit 1
+fi
+
+echo "usb-proxy: HTTP/HTTPS proxy configured"
+echo "  gateway: $proxy_gateway"
+echo "  port:    $proxy_port"
+[ -n "$proxy_iface" ] && echo "  iface:   $proxy_iface"
+echo "  NetSurf: $netsurf_choices"
+
+if command -v nc >/dev/null 2>&1; then
+    if nc -z -w 2 "$proxy_gateway" "$proxy_port" >/dev/null 2>&1; then
+        echo "  check:   $proxy_gateway:$proxy_port reachable"
+    else
+        echo "  check:   cannot reach $proxy_gateway:$proxy_port" >&2
+        echo "  verify USB tethering and Clash Meta Allow LAN/port 7890" >&2
+    fi
+else
+    echo "  check:   skipped (nc not installed)"
+fi
+
+echo "usb-proxy: use 'curl -v https://example.com' to verify an actual request"
+echo "usb-proxy: NetSurf configuration is persistent; source this script to also update the current shell"
+
+return 0 2>/dev/null || exit 0

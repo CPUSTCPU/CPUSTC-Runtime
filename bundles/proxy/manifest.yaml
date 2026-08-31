@@ -1,0 +1,16 @@
+schema: 1
+id: proxy
+version: "1"
+description: "CPUSTC USB tethering proxy configuration command"
+target:
+  architecture: loongarch32r
+  abi: ilp32s
+commands:
+  - cpustc-proxy
+required_paths:
+  - path: /usr/bin/cpustc-proxy
+    type: executable
+licenses:
+  - id: NOASSERTION
+    files:
+      - licenses/NOTICE

@@ -1,0 +1,4 @@
+This prebuilt toolchain bundle contains GCC, binutils, libc, and sysroot
+components under multiple upstream licenses. The legacy archive did not contain
+a complete corresponding-source and license inventory. Redistribution is not
+authorized by this bundle metadata; complete the legal audit before release.

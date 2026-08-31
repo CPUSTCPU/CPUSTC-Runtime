@@ -1,0 +1,19 @@
+schema: 1
+id: hax
+version: "0.3.0-22-gb1d2690"
+description: "CPUSTC LA32R hax command-line coding assistant"
+target:
+  architecture: loongarch32r
+  abi: ilp32s
+commands:
+  - hax
+required_paths:
+  - path: /usr/bin/hax
+    type: executable
+licenses:
+  - id: GPL-3.0-or-later
+    files:
+      - licenses/hax-LICENSE
+  - id: MIT
+    files:
+      - licenses/jansson-LICENSE

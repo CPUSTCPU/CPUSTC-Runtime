@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+runtime_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+exec "$runtime_root/bin/python3" -m pip "$@"

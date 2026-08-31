@@ -1,0 +1,19 @@
+schema: 1
+id: w3m
+version: "0.5.3+git20230718"
+description: "CPUSTC LA32R w3m terminal web browser runtime"
+target:
+  architecture: loongarch32r
+  abi: ilp32s
+commands:
+  - w3m
+required_paths:
+  - path: /opt/w3m/bin/w3m
+    type: executable
+licenses:
+  - id: w3m-license
+    files:
+      - licenses/w3m-COPYING
+  - id: bdwgc-license
+    files:
+      - licenses/bdwgc-README.QUICK

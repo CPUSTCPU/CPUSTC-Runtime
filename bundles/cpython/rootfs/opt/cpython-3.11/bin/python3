@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+runtime_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+export PYTHONHOME="$runtime_root"
+export TERMINFO="$runtime_root/share/terminfo"
+export LD_LIBRARY_PATH="$runtime_root/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+: "${PYTHONDONTWRITEBYTECODE:=1}"
+export PYTHONDONTWRITEBYTECODE
+
+exec "$runtime_root/bin/python3.11" "$@"
